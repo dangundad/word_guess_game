@@ -1,14 +1,10 @@
-// ================================================
-// DangunDad Flutter App - app_binding.dart Template
-// ================================================
-// word_guess_game 치환 후 사용
-// mbti_pro 프로덕션 패턴 기반
-
 import 'package:get/get.dart';
 
+import 'package:word_guess_game/app/controllers/game_controller.dart';
 import 'package:word_guess_game/app/controllers/home_controller.dart';
 import 'package:word_guess_game/app/controllers/setting_controller.dart';
 import 'package:word_guess_game/app/services/hive_service.dart';
+import 'package:word_guess_game/app/services/word_service.dart';
 
 class AppBinding implements Bindings {
   @override
@@ -18,14 +14,18 @@ class AppBinding implements Bindings {
       Get.put(HiveService(), permanent: true);
     }
 
-    // 영구 컨트롤러 (앱 전역에서 유지)
+    // WordService (앱 전역 영구 서비스)
+    if (!Get.isRegistered<WordService>()) {
+      Get.put(WordService(), permanent: true);
+    }
+
+    // 영구 컨트롤러
     if (!Get.isRegistered<SettingController>()) {
       Get.put(SettingController(), permanent: true);
     }
 
-    // 지연 초기화 컨트롤러 (필요할 때 생성, fenix: true로 재생성 가능)
+    // 지연 초기화 컨트롤러
     Get.lazyPut(() => HomeController(), fenix: true);
-
-    // ---- 앱별 컨트롤러 추가 ----
+    Get.lazyPut(() => GameController(), fenix: true);
   }
 }

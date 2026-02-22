@@ -20,6 +20,7 @@ import 'package:word_guess_game/app/admob/ads_rewarded.dart';
 import 'package:word_guess_game/app/bindings/app_binding.dart';
 import 'package:word_guess_game/app/routes/app_pages.dart';
 import 'package:word_guess_game/app/services/hive_service.dart';
+import 'package:word_guess_game/app/services/word_service.dart';
 import 'package:word_guess_game/app/theme/app_theme.dart';
 import 'package:word_guess_game/app/translate/translate.dart';
 
@@ -54,6 +55,11 @@ Future<void> main() async {
   // Hive 초기화 (어댑터 등록 + Box 열기)
   await HiveService.init();
   Get.put<HiveService>(HiveService(), permanent: true);
+
+  // 단어 목록 로드
+  final wordService = WordService();
+  await wordService.loadWords();
+  Get.put<WordService>(wordService, permanent: true);
 
   // Edge-to-Edge UI
   unawaited(

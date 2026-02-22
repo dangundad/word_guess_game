@@ -3,11 +3,19 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
+import 'package:word_guess_game/app/data/models/game_state_model.dart';
+import 'package:word_guess_game/app/data/models/stats_model.dart';
 
 extension HiveRegistrar on HiveInterface {
-  void registerAdapters() {}
+  void registerAdapters() {
+    registerAdapter(GameStateModelAdapter());
+    registerAdapter(StatsModelAdapter());
+  }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
-  void registerAdapters() {}
+  void registerAdapters() {
+    registerAdapter(GameStateModelAdapter());
+    registerAdapter(StatsModelAdapter());
+  }
 }

@@ -1,16 +1,11 @@
-// ================================================
-// DangunDad Flutter App - app_pages.dart Template
-// ================================================
-// word_guess_game 치환 후 사용
-// mbti_pro 프로덕션 패턴 기반 (part 패턴)
-
 // ignore_for_file: constant_identifier_names
 
 import 'package:get/get.dart';
 
 import 'package:word_guess_game/app/bindings/app_binding.dart';
+import 'package:word_guess_game/app/controllers/game_controller.dart';
+import 'package:word_guess_game/app/pages/game/game_page.dart';
 import 'package:word_guess_game/app/pages/home/home_page.dart';
-// import 'package:word_guess_game/app/pages/settings/settings_page.dart';
 
 part 'app_routes.dart';
 
@@ -25,13 +20,12 @@ class AppPages {
       page: () => const HomePage(),
       binding: AppBinding(),
     ),
-    // GetPage(
-    //   name: _Paths.SETTINGS,
-    //   page: () => const SettingsPage(),
-    //   binding: BindingsBuilder(() {
-    //     Get.lazyPut(() => SettingController());
-    //   }),
-    // ),
-    // ---- 앱별 페이지 추가 ----
+    GetPage(
+      name: _Paths.GAME,
+      page: () => const GamePage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => GameController(), fenix: true);
+      }),
+    ),
   ];
 }
