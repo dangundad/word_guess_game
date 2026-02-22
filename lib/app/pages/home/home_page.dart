@@ -36,7 +36,7 @@ class HomePage extends GetView<HomeController> {
                     SizedBox(height: 40.h),
 
                     // ─── Category Selection ───────────────────────
-                    _CategorySelector(),
+                    const _CategorySelector(),
                     SizedBox(height: 32.h),
 
                     // ─── Mode Buttons ─────────────────────────────
@@ -44,7 +44,14 @@ class HomePage extends GetView<HomeController> {
                     SizedBox(height: 40.h),
 
                     // ─── Stats ────────────────────────────────────
-                    _StatsCard(),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOut,
+                      builder: (ctx, v, child) =>
+                          Opacity(opacity: v, child: child),
+                      child: const _StatsCard(),
+                    ),
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -65,7 +72,7 @@ class HomePage extends GetView<HomeController> {
   Widget _buildHeader(ColorScheme cs) {
     return Column(
       children: [
-        // Letter grid decoration
+        // Letter grid with stagger entrance
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: ['W', 'O', 'R', 'D', 'S'].asMap().entries.map((e) {
@@ -76,21 +83,33 @@ class HomePage extends GetView<HomeController> {
               const Color(0xFF538D4E),
               const Color(0xFFB59F3B),
             ];
-            return Container(
-              width: 48.r,
-              height: 48.r,
-              margin: EdgeInsets.symmetric(horizontal: 2.w),
-              decoration: BoxDecoration(
-                color: colors[e.key],
-                borderRadius: BorderRadius.circular(4.r),
+            return TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: 1),
+              duration: Duration(milliseconds: 300 + e.key * 80),
+              curve: Curves.easeOutBack,
+              builder: (ctx, v, child) => Transform.scale(
+                scale: v,
+                child: Opacity(
+                  opacity: v.clamp(0.0, 1.0),
+                  child: child,
+                ),
               ),
-              child: Center(
-                child: Text(
-                  e.value,
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
+              child: Container(
+                width: 48.r,
+                height: 48.r,
+                margin: EdgeInsets.symmetric(horizontal: 2.w),
+                decoration: BoxDecoration(
+                  color: colors[e.key],
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                child: Center(
+                  child: Text(
+                    e.value,
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -98,23 +117,35 @@ class HomePage extends GetView<HomeController> {
           }).toList(),
         ),
         SizedBox(height: 16.h),
-        Text(
-          'home_title'.tr,
-          style: TextStyle(
-            fontSize: 32.sp,
-            fontWeight: FontWeight.w900,
-            color: cs.onSurface,
-            letterSpacing: -0.5,
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOut,
+          builder: (ctx, v, child) => Opacity(opacity: v, child: child),
+          child: Text(
+            'home_title'.tr,
+            style: TextStyle(
+              fontSize: 32.sp,
+              fontWeight: FontWeight.w900,
+              color: cs.onSurface,
+              letterSpacing: -0.5,
+            ),
           ),
         ),
         SizedBox(height: 8.h),
-        Text(
-          'home_subtitle'.tr,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: cs.onSurfaceVariant,
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeOut,
+          builder: (ctx, v, child) => Opacity(opacity: v, child: child),
+          child: Text(
+            'home_subtitle'.tr,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: cs.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -124,32 +155,50 @@ class HomePage extends GetView<HomeController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FilledButton.icon(
-          onPressed: () => _startGame(GameMode.daily),
-          icon: const Icon(Icons.today),
-          label: Text(
-            'play_daily'.tr,
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+          builder: (ctx, v, child) => Transform.translate(
+            offset: Offset(0, (1 - v) * 16),
+            child: Opacity(opacity: v, child: child),
           ),
-          style: FilledButton.styleFrom(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+          child: FilledButton.icon(
+            onPressed: () => _startGame(GameMode.daily),
+            icon: const Icon(Icons.today),
+            label: Text(
+              'play_daily'.tr,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+            ),
+            style: FilledButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
           ),
         ),
         SizedBox(height: 12.h),
-        OutlinedButton.icon(
-          onPressed: () => _startGame(GameMode.infinite),
-          icon: const Icon(Icons.all_inclusive),
-          label: Text(
-            'play_infinite'.tr,
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.easeOut,
+          builder: (ctx, v, child) => Transform.translate(
+            offset: Offset(0, (1 - v) * 16),
+            child: Opacity(opacity: v, child: child),
           ),
-          style: OutlinedButton.styleFrom(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+          child: OutlinedButton.icon(
+            onPressed: () => _startGame(GameMode.infinite),
+            icon: const Icon(Icons.all_inclusive),
+            label: Text(
+              'play_infinite'.tr,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
           ),
         ),
