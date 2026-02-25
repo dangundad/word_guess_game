@@ -35,10 +35,12 @@ class WordService extends GetxService {
   }
 
   String getDailyWord(WordCategory category) {
-    final dateKey = getDateKey();
+    final now = DateTime.now();
+    // Stable daily index: days elapsed since epoch base date (consistent across runs)
+    final base = DateTime(2024, 1, 1);
+    final dayIndex = now.difference(base).inDays.abs();
     final words = getWordsForCategory(category);
-    final index = dateKey.hashCode.abs() % words.length;
-    return words[index];
+    return words[dayIndex % words.length];
   }
 
   String getRandomWord(WordCategory category) {
