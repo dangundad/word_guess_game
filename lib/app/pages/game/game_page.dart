@@ -6,6 +6,7 @@ import 'package:word_guess_game/app/controllers/game_controller.dart';
 import 'package:word_guess_game/app/pages/game/widgets/keyboard_widget.dart';
 import 'package:word_guess_game/app/pages/game/widgets/letter_tile.dart';
 import 'package:word_guess_game/app/pages/game/widgets/result_dialog.dart';
+import 'package:word_guess_game/app/widgets/confetti_overlay.dart';
 
 class GamePage extends GetView<GameController> {
   const GamePage({super.key});
@@ -61,51 +62,64 @@ class GamePage extends GetView<GameController> {
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // ─── Message Overlay ─────────────────────────────────
-            Obx(() {
-              final msg = controller.message.value;
-              return AnimatedOpacity(
-                opacity: msg.isEmpty ? 0 : 1,
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 4.h),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: cs.inverseSurface,
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    msg,
-                    style: TextStyle(
-                      color: cs.onInverseSurface,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
+            Column(
+              children: [
+                // ─── Message Overlay ─────────────────────────────
+                Obx(() {
+                  final msg = controller.message.value;
+                  return AnimatedOpacity(
+                    opacity: msg.isEmpty ? 0 : 1,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: cs.inverseSurface,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Text(
+                        msg,
+                        style: TextStyle(
+                          color: cs.onInverseSurface,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
+                  );
+                }),
+
+                // ─── Grid ────────────────────────────────────────
+                Expanded(
+                  child: Center(
+                    child: Obx(() => Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (rowIndex) {
+                        return _buildRow(context, rowIndex);
+                      }),
+                    )),
                   ),
                 ),
-              );
-            }),
 
-            // ─── Grid ────────────────────────────────────────────
-            Expanded(
-              child: Center(
-                child: Obx(() => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(6, (rowIndex) {
-                    return _buildRow(context, rowIndex);
-                  }),
-                )),
-              ),
+                // ─── Keyboard ────────────────────────────────────
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+                  child: const KeyboardWidget(),
+                ),
+              ],
             ),
 
-            // ─── Keyboard ────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
-              child: const KeyboardWidget(),
-            ),
+            // ─── Confetti ────────────────────────────────────────
+            Obx(() => controller.showConfetti.value
+                ? IgnorePointer(
+                    child: ConfettiOverlay(
+                      onComplete: () => controller.showConfetti.value = false,
+                    ),
+                  )
+                : const SizedBox.shrink()),
           ],
         ),
       ),

@@ -1,6 +1,8 @@
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart' hide Share;
 
+import 'package:word_guess_game/app/controllers/setting_controller.dart';
 import 'package:word_guess_game/app/data/enums/game_mode.dart';
 import 'package:word_guess_game/app/data/enums/letter_state.dart';
 import 'package:word_guess_game/app/data/enums/word_category.dart';
@@ -33,6 +35,9 @@ class GameController extends GetxController {
 
   // ─── Message Overlay ───────────────────────────────────────────
   final RxString message = ''.obs;
+
+  // ─── Confetti ──────────────────────────────────────────────────
+  final RxBool showConfetti = false.obs;
 
   // ─── Hints ─────────────────────────────────────────────────────
   final RxInt hintsUsed = 0.obs;
@@ -128,6 +133,9 @@ class GameController extends GetxController {
 
     if (!WordService.to.isValidWord(input)) {
       _showMessage('not_in_word_list'.tr);
+      if (SettingController.to.hapticEnabled.value) {
+        HapticFeedback.heavyImpact();
+      }
       _triggerShake();
       return;
     }
@@ -151,12 +159,23 @@ class GameController extends GetxController {
     keyStates.refresh();
 
     if (guess == targetWord.value) {
+      if (SettingController.to.hapticEnabled.value) {
+        HapticFeedback.mediumImpact();
+      }
       isWon.value = true;
       isCompleted.value = true;
+      showConfetti.value = true;
       _updateStats(won: true, guessCount: guesses.length);
     } else if (guesses.length >= 6) {
+      if (SettingController.to.hapticEnabled.value) {
+        HapticFeedback.heavyImpact();
+      }
       isCompleted.value = true;
       _updateStats(won: false, guessCount: 0);
+    } else {
+      if (SettingController.to.hapticEnabled.value) {
+        HapticFeedback.lightImpact();
+      }
     }
 
     await _saveGameState();

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -97,7 +98,7 @@ class ResultDialog extends GetView<GameController> {
                 type: AdHelper.banner,
               ),
             ],
-          ),
+          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.2, end: 0),
         ),
       );
     });

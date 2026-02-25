@@ -44,6 +44,13 @@ class SettingsPage extends GetView<SettingController> {
                 title: _loc('settings', 'Settings'),
                 children: [
                   _buildSwitchTile(
+                    icon: Icons.dark_mode,
+                    title: _loc('dark_mode', 'Dark Mode'),
+                    subtitle: _loc('dark_mode_desc', 'Switch to dark theme'),
+                    value: controller.isDarkMode.value,
+                    onChanged: (_) => controller.toggleDarkMode(),
+                  ),
+                  _buildSwitchTile(
                     icon: Icons.volume_up,
                     title: _loc('sound', 'Sound'),
                     subtitle: _loc('sound_desc', 'Play sound effects'),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'package:word_guess_game/app/controllers/game_controller.dart';
+import 'package:word_guess_game/app/controllers/setting_controller.dart';
 import 'package:word_guess_game/app/data/enums/letter_state.dart';
 
 class KeyboardWidget extends StatelessWidget {
@@ -75,7 +77,12 @@ class KeyboardWidget extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 2.5.w),
       child: GestureDetector(
-        onTap: () => c.onKeyTap(key),
+        onTap: () {
+          if (SettingController.to.hapticEnabled.value) {
+            HapticFeedback.lightImpact();
+          }
+          c.onKeyTap(key);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: isWide ? 56.w : 34.w,
