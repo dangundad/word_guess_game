@@ -339,46 +339,55 @@ class _CategorySelector extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8.h),
-        Obx(() => Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children: WordCategory.values.map((cat) {
-                final selected = selectedCategory.value == cat;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? cs.primaryContainer
-                        : cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: selected
-                          ? cs.primary
-                          : cs.outline.withValues(alpha: 0.45),
-                      width: selected ? 1.4 : 1,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () => selectedCategory.value = cat,
-                    borderRadius: BorderRadius.circular(20.r),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
+        Obx(() => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: WordCategory.values.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final cat = entry.value;
+                  final selected = selectedCategory.value == cat;
+                  final isLast = idx == WordCategory.values.length - 1;
+                  return Padding(
+                    padding: EdgeInsets.only(right: isLast ? 0 : 8.w),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? cs.primaryContainer
+                            : cs.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: selected
+                              ? cs.primary
+                              : cs.outline.withValues(alpha: 0.45),
+                          width: selected ? 1.4 : 1,
+                        ),
                       ),
-                      child: Text(
-                        cat.displayKey.tr,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
-                          color: selected ? cs.primary : cs.onSurfaceVariant,
+                      child: InkWell(
+                        onTap: () => selectedCategory.value = cat,
+                        borderRadius: BorderRadius.circular(20.r),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
+                          ),
+                          child: Text(
+                            cat.displayKey.tr,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight:
+                                  selected ? FontWeight.w700 : FontWeight.w500,
+                              color:
+                                  selected ? cs.primary : cs.onSurfaceVariant,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             )),
       ],
     );
@@ -505,8 +514,12 @@ class _GuessDistribution extends StatelessWidget {
                     width: fraction * 1 == 0 ? 24.w : (Get.width - 128.w) * fraction,
                     height: 18.h,
                     decoration: BoxDecoration(
-                      color:
-                          count > 0 ? const Color(0xFF538D4E) : cs.surfaceContainerHighest,
+                      gradient: count > 0
+                          ? const LinearGradient(
+                              colors: [Color(0xFF538D4E), Color(0xFF2D5016)],
+                            )
+                          : null,
+                      color: count > 0 ? null : cs.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(2.r),
                     ),
                     child: Align(
