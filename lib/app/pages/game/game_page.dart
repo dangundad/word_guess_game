@@ -8,15 +8,23 @@ import 'package:word_guess_game/app/pages/game/widgets/letter_tile.dart';
 import 'package:word_guess_game/app/pages/game/widgets/result_dialog.dart';
 import 'package:word_guess_game/app/widgets/confetti_overlay.dart';
 
-class GamePage extends GetView<GameController> {
+class GamePage extends StatefulWidget {
   const GamePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  State<GamePage> createState() => _GamePageState();
+}
 
+class _GamePageState extends State<GamePage> {
+  late final GameController controller;
+  Worker? _completedWorker;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = GameController.to;
     // Show result dialog after animation when game completes
-    ever(controller.isCompleted, (completed) {
+    _completedWorker = ever(controller.isCompleted, (completed) {
       if (completed) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (Get.isDialogOpen != true) {
@@ -25,6 +33,17 @@ class GamePage extends GetView<GameController> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _completedWorker?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
