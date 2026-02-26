@@ -21,6 +21,27 @@ class HomePage extends GetView<HomeController> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'app_name'.tr,
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
+        ),
+        centerTitle: true,
+        backgroundColor: cs.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: Container(
+            height: 3,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [cs.primary, cs.tertiary],
+              ),
+            ),
+          ),
+        ),
+      ),
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: DecoratedBox(
@@ -44,11 +65,13 @@ class HomePage extends GetView<HomeController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(height: 36.h),
-                      _buildHeader(cs),
-                      SizedBox(height: 26.h),
-                      const _CategorySelector(),
                       SizedBox(height: 28.h),
+                      _buildHeroSection(cs),
+                      SizedBox(height: 24.h),
+                      _buildWordTiles(cs),
+                      SizedBox(height: 24.h),
+                      const _CategorySelector(),
+                      SizedBox(height: 24.h),
                       _buildModeButtons(cs),
                       SizedBox(height: 28.h),
                       TweenAnimationBuilder<double>(
@@ -80,92 +103,53 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  Widget _buildHeader(ColorScheme cs) {
-    final letters = ['W', 'O', 'R', 'D', 'S'];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: letters.asMap().entries.map((e) {
-            final colors = [
-              const Color(0xFF538D4E),
-              const Color(0xFFB59F3B),
-              cs.surfaceContainerHighest,
-              const Color(0xFF538D4E),
-              const Color(0xFFB59F3B),
-            ];
-
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: Duration(milliseconds: 280 + e.key * 80),
-              curve: Curves.easeOutBack,
-              builder: (ctx, v, child) => Transform.scale(
-                scale: v,
-                child: Opacity(
-                  opacity: v.clamp(0.0, 1.0),
-                  child: child,
-                ),
-              ),
-              child: Container(
-                width: 48.r,
-                height: 48.r,
-                margin: EdgeInsets.symmetric(horizontal: 2.w),
-                decoration: BoxDecoration(
-                  color: colors[e.key],
-                  borderRadius: BorderRadius.circular(4.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors[e.key].withValues(alpha: 0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    e.value,
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+  Widget _buildHeroSection(ColorScheme cs) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOut,
+      builder: (ctx, v, child) => Opacity(
+        opacity: v,
+        child: Transform.translate(
+          offset: Offset(0, (1 - v) * 16),
+          child: child,
         ),
-        SizedBox(height: 16.h),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeOut,
-          builder: (ctx, v, child) => Opacity(opacity: v, child: child),
-          child: Text(
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 110.r,
+            height: 110.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  cs.primaryContainer,
+                  cs.primaryContainer.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                LucideIcons.wholeWord,
+                size: 60.r,
+                color: cs.primary,
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Text(
             'home_title'.tr,
             style: TextStyle(
-              fontSize: 33.sp,
+              fontSize: 30.sp,
               fontWeight: FontWeight.w900,
               color: cs.onSurface,
-              letterSpacing: -0.6,
+              letterSpacing: -0.5,
             ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        SizedBox(height: 6.h),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeOut,
-          builder: (ctx, v, child) => Opacity(
-            opacity: v,
-            child: Transform.translate(
-              offset: Offset(0, (1 - v) * 8),
-              child: child,
-            ),
-          ),
-          child: Text(
+          SizedBox(height: 6.h),
+          Text(
             'home_subtitle'.tr,
             style: TextStyle(
               fontSize: 14.sp,
@@ -176,46 +160,80 @@ class HomePage extends GetView<HomeController> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWordTiles(ColorScheme cs) {
+    final letters = ['W', 'O', 'R', 'D', 'S'];
+    final colors = [
+      const Color(0xFF538D4E),
+      const Color(0xFFB59F3B),
+      cs.surfaceContainerHighest,
+      const Color(0xFF538D4E),
+      const Color(0xFFB59F3B),
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: letters.asMap().entries.map((e) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: Duration(milliseconds: 280 + e.key * 80),
+          curve: Curves.easeOutBack,
+          builder: (ctx, v, child) => Transform.scale(
+            scale: v,
+            child: Opacity(
+              opacity: v.clamp(0.0, 1.0),
+              child: child,
+            ),
+          ),
+          child: Container(
+            width: 48.r,
+            height: 48.r,
+            margin: EdgeInsets.symmetric(horizontal: 2.w),
+            decoration: BoxDecoration(
+              color: colors[e.key],
+              borderRadius: BorderRadius.circular(4.r),
+              boxShadow: [
+                BoxShadow(
+                  color: colors[e.key].withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                e.value,
+                style: TextStyle(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
   Widget _buildModeButtons(ColorScheme cs) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'mode_daily'.tr,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: cs.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-          ),
+        _GradientButton(
+          label: 'play_daily'.tr,
+          icon: LucideIcons.calendar1,
+          onTap: () => _startGame(GameMode.daily),
         ),
-        SizedBox(height: 10.h),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionCard(
-                label: 'play_daily'.tr,
-                subtitle: 'play_once_per_day'.tr,
-                icon: LucideIcons.calendar1,
-                color: const Color(0xFF538D4E),
-                onTap: () => _startGame(GameMode.daily),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _ActionCard(
-                label: 'play_infinite'.tr,
-                subtitle: 'keep_playing'.tr,
-                icon: LucideIcons.infinity,
-                color: const Color(0xFFB59F3B),
-                onTap: () => _startGame(GameMode.infinite),
-                outlined: true,
-              ),
-            ),
-          ],
+        SizedBox(height: 12.h),
+        _OutlinedActionButton(
+          label: 'play_infinite'.tr,
+          icon: LucideIcons.infinity,
+          onTap: () => _startGame(GameMode.infinite),
         ),
       ],
     );
@@ -229,89 +247,117 @@ class HomePage extends GetView<HomeController> {
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _GradientButton extends StatelessWidget {
   final String label;
-  final String subtitle;
   final IconData icon;
-  final Color color;
-  final bool outlined;
   final VoidCallback onTap;
 
-  const _ActionCard({
+  const _GradientButton({
     required this.label,
-    required this.subtitle,
     required this.icon,
-    required this.color,
     required this.onTap,
-    this.outlined = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Get.theme.colorScheme;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18.r),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.fromLTRB(14.w, 16.h, 14.w, 14.h),
-        decoration: BoxDecoration(
-          gradient: outlined
-              ? null
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color.withValues(alpha: 0.24),
-                    color.withValues(alpha: 0.10),
-                  ],
-                ),
-          color: outlined ? cs.surfaceContainerHighest : null,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(
-            color: outlined ? cs.outline : color.withValues(alpha: 0.35),
-            width: 1.2,
-          ),
-          boxShadow: outlined
-              ? [
-                  BoxShadow(
-                    color: cs.shadow.withValues(alpha: 0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [cs.primary, cs.tertiary],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        child: Column(
-          children: [
-            Icon(icon, size: 22.r, color: cs.primary),
-            SizedBox(height: 10.h),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-                height: 1.2,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: cs.primary.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 22.r, color: cs.onPrimary),
+                SizedBox(width: 10.w),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: cs.onPrimary,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 6.h),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: cs.onSurfaceVariant,
-                height: 1.2,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OutlinedActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _OutlinedActionButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Get.theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.5), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 20.r, color: cs.primary),
+                SizedBox(width: 10.w),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -408,13 +454,19 @@ class _StatsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: cs.outline.withValues(alpha: 0.4)),
+        gradient: LinearGradient(
+          colors: [
+            cs.primaryContainer,
+            cs.secondaryContainer.withValues(alpha: 0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.08),
-            blurRadius: 14,
+            color: cs.primary.withValues(alpha: 0.12),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
@@ -422,13 +474,19 @@ class _StatsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'stats_title'.tr,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurfaceVariant,
-            ),
+          Row(
+            children: [
+              Icon(LucideIcons.chartBar, size: 18.r, color: cs.primary),
+              SizedBox(width: 8.w),
+              Text(
+                'stats_title'.tr,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
           Row(
@@ -530,8 +588,7 @@ class _GuessDistribution extends StatelessWidget {
                           '$count',
                           style: TextStyle(
                             fontSize: 10.sp,
-                            color:
-                                count > 0 ? Colors.white : cs.onSurfaceVariant,
+                            color: count > 0 ? Colors.white : cs.onSurfaceVariant,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
