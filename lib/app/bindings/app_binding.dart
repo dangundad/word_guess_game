@@ -9,6 +9,7 @@ import 'package:word_guess_game/app/services/activity_log_service.dart';
 import 'package:word_guess_game/app/controllers/history_controller.dart';
 import 'package:word_guess_game/app/controllers/stats_controller.dart';
 
+import 'package:word_guess_game/app/services/app_rating_service.dart';
 import 'package:word_guess_game/app/services/purchase_service.dart';
 import 'package:word_guess_game/app/controllers/premium_controller.dart';
 
@@ -56,6 +57,10 @@ class AppBinding implements Bindings {
 
     if (!Get.isRegistered<StatsController>()) {
       Get.lazyPut(() => StatsController());
+    }
+
+    if (!Get.isRegistered<AppRatingService>()) {
+      Get.put(AppRatingService(), permanent: true);
     }
   }
 }
