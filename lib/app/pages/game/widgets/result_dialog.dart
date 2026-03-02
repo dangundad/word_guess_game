@@ -9,6 +9,7 @@ import 'package:word_guess_game/app/admob/ads_banner.dart';
 import 'package:word_guess_game/app/admob/ads_helper.dart';
 import 'package:word_guess_game/app/controllers/game_controller.dart';
 import 'package:word_guess_game/app/data/enums/game_mode.dart';
+import 'package:word_guess_game/app/data/enums/game_status.dart';
 import 'package:word_guess_game/app/data/enums/letter_state.dart';
 
 class ResultDialog extends GetView<GameController> {
@@ -19,7 +20,7 @@ class ResultDialog extends GetView<GameController> {
     final cs = Theme.of(context).colorScheme;
 
     return Obx(() {
-      final won = controller.isWon.value;
+      final won = controller.status.value == GameStatus.won;
       final target = controller.targetWord.value;
       final guessCount = controller.guesses.length;
 

@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart' hide Share;
 
 import 'package:word_guess_game/app/controllers/setting_controller.dart';
 import 'package:word_guess_game/app/data/enums/game_mode.dart';
+import 'package:word_guess_game/app/data/enums/game_status.dart';
 import 'package:word_guess_game/app/data/enums/letter_state.dart';
 import 'package:word_guess_game/app/data/enums/word_category.dart';
 import 'package:word_guess_game/app/data/models/game_state_model.dart';
@@ -19,8 +20,7 @@ class GameController extends GetxController {
   final RxList<String> guesses = <String>[].obs;
   final RxList<List<LetterState>> guessStates = <List<LetterState>>[].obs;
   final RxString currentInput = ''.obs;
-  final RxBool isCompleted = false.obs;
-  final RxBool isWon = false.obs;
+  final Rx<GameStatus> status = GameStatus.idle.obs;
 
   // ─── Mode & Category ───────────────────────────────────────────
   final Rx<GameMode> gameMode = GameMode.daily.obs;
@@ -63,8 +63,7 @@ class GameController extends GetxController {
     guesses.clear();
     guessStates.clear();
     currentInput.value = '';
-    isCompleted.value = false;
-    isWon.value = false;
+    status.value = GameStatus.playing;
     keyStates.clear();
     hintsUsed.value = 0;
     shakeRow.value = false;
@@ -84,8 +83,11 @@ class GameController extends GetxController {
           flippedRows.add(true);
           _updateKeyStates(guess, states);
         }
-        isCompleted.value = saved.isCompleted;
-        isWon.value = saved.isWon;
+        if (saved.isCompleted) {
+          status.value = saved.isWon ? GameStatus.won : GameStatus.lost;
+        } else {
+          status.value = GameStatus.playing;
+        }
         return;
       }
 
@@ -100,7 +102,7 @@ class GameController extends GetxController {
   // ─── Key Input ─────────────────────────────────────────────────
 
   void onKeyTap(String key) {
-    if (isCompleted.value) return;
+    if (status.value != GameStatus.playing) return;
     if (key == '⌫') {
       deleteLetter();
     } else if (key == 'ENTER') {
@@ -162,15 +164,14 @@ class GameController extends GetxController {
       if (SettingController.to.hapticEnabled.value) {
         HapticFeedback.mediumImpact();
       }
-      isWon.value = true;
-      isCompleted.value = true;
+      status.value = GameStatus.won;
       showConfetti.value = true;
       _updateStats(won: true, guessCount: guesses.length);
     } else if (guesses.length >= 6) {
       if (SettingController.to.hapticEnabled.value) {
         HapticFeedback.heavyImpact();
       }
-      isCompleted.value = true;
+      status.value = GameStatus.lost;
       _updateStats(won: false, guessCount: 0);
     } else {
       if (SettingController.to.hapticEnabled.value) {
@@ -217,7 +218,7 @@ class GameController extends GetxController {
       _showMessage('no_hints_left'.tr);
       return;
     }
-    if (isCompleted.value) return;
+    if (status.value != GameStatus.playing) return;
 
     // Find positions not yet correctly guessed
     final revealed = <int>{};
@@ -252,7 +253,7 @@ class GameController extends GetxController {
   String getShareText() {
     final dateKey = WordService.to.getDateKey();
     final modeStr = gameMode.value == GameMode.daily ? 'Daily' : 'Infinite';
-    final result = isWon.value ? '${guesses.length}/6' : 'X/6';
+    final result = status.value == GameStatus.won ? '${guesses.length}/6' : 'X/6';
     final rows = guessStates.map((states) {
       return states.map((s) {
         switch (s) {
@@ -277,8 +278,8 @@ class GameController extends GetxController {
   void _updateKeyStates(String guess, List<LetterState> states) {
     for (int i = 0; i < 5; i++) {
       final letter = guess[i];
-      final existing = keyStates[letter] ?? LetterState.absent;
-      if (states[i].priority > existing.priority) {
+      final existing = keyStates[letter];
+      if (existing == null || states[i].priority > existing.priority) {
         keyStates[letter] = states[i];
       }
     }
@@ -304,7 +305,9 @@ class GameController extends GetxController {
 
     if (won) {
       stats.totalWins++;
-      if (stats.lastPlayedDate == yesterday || stats.lastPlayedDate == today) {
+      if (stats.lastPlayedDate == today) {
+        // Already played today — keep streak as-is (no double increment)
+      } else if (stats.lastPlayedDate == yesterday) {
         stats.currentStreak++;
       } else {
         stats.currentStreak = 1;
@@ -316,7 +319,9 @@ class GameController extends GetxController {
         stats.guessDist[guessCount - 1]++;
       }
     } else {
-      stats.currentStreak = 0;
+      if (stats.lastPlayedDate != today) {
+        stats.currentStreak = 0;
+      }
     }
 
     stats.lastPlayedDate = today;
@@ -333,8 +338,8 @@ class GameController extends GetxController {
       gameMode: gameMode.value.name,
       category: category.value.name,
       guesses: List.from(guesses),
-      isCompleted: isCompleted.value,
-      isWon: isWon.value,
+      isCompleted: status.value == GameStatus.won || status.value == GameStatus.lost,
+      isWon: status.value == GameStatus.won,
       createdAt: DateTime.now(),
     );
     await HiveService.to.saveDailyGameState(state);

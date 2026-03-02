@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'package:word_guess_game/app/controllers/game_controller.dart';
+import 'package:word_guess_game/app/data/enums/game_status.dart';
 import 'package:word_guess_game/app/pages/game/widgets/keyboard_widget.dart';
 import 'package:word_guess_game/app/pages/game/widgets/letter_tile.dart';
 import 'package:word_guess_game/app/pages/game/widgets/result_dialog.dart';
@@ -24,8 +25,8 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     controller = GameController.to;
     // Show result dialog after animation when game completes
-    _completedWorker = ever(controller.isCompleted, (completed) {
-      if (completed) {
+    _completedWorker = ever(controller.status, (s) {
+      if (s == GameStatus.won || s == GameStatus.lost) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (Get.isDialogOpen != true) {
             Get.dialog(const ResultDialog(), barrierDismissible: false);
@@ -71,7 +72,7 @@ class _GamePageState extends State<GamePage> {
               ],
             ),
             tooltip: 'hint'.tr,
-            onPressed: controller.isCompleted.value ? null : controller.useHint,
+            onPressed: controller.status.value != GameStatus.playing ? null : controller.useHint,
           )),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -166,7 +167,7 @@ class _GamePageState extends State<GamePage> {
           (_) => rowIndex < flippedRows.length && flippedRows[rowIndex],
         );
       } else if (rowIndex == guesses.length &&
-          !controller.isCompleted.value) {
+          controller.status.value == GameStatus.playing) {
         // Current input row
         letters = List.generate(5, (i) {
           return i < currentInput.length ? currentInput[i] : '';
