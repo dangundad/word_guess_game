@@ -68,7 +68,7 @@ class HistoryPage extends GetView<HistoryController> {
                     }
 
                     return ListView.separated(
-                      padding: EdgeInsets.fromLTRB(18.w, 4.h, 18.w, 24.w),
+                      padding: EdgeInsets.fromLTRB(18.w, 4.h, 18.w, 24.h),
                       itemCount: events.length,
                       separatorBuilder: (_, _) => SizedBox(height: 10.h),
                       itemBuilder: (context, index) {
@@ -80,7 +80,7 @@ class HistoryPage extends GetView<HistoryController> {
                         final at = _formatTime(item['at']);
 
                         return Container(
-                          padding: EdgeInsets.all(14.w),
+                          padding: EdgeInsets.all(14.r),
                           decoration: BoxDecoration(
                             color: cs.surfaceContainerLowest,
                             borderRadius: BorderRadius.circular(16.r),
