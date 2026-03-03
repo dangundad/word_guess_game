@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:vibration/vibration.dart';
 import 'package:get/get.dart';
 
 import 'package:word_guess_game/app/controllers/game_controller.dart';
@@ -79,7 +79,9 @@ class KeyboardWidget extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           if (SettingController.to.hapticEnabled.value) {
-            HapticFeedback.lightImpact();
+            Vibration.hasVibrator().then((v) {
+              if (v) Vibration.vibrate(duration: 50);
+            });
           }
           c.onKeyTap(key);
         },

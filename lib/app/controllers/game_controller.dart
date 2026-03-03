@@ -1,5 +1,5 @@
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:vibration/vibration.dart';
 import 'package:share_plus/share_plus.dart' hide Share;
 
 import 'package:word_guess_game/app/controllers/setting_controller.dart';
@@ -43,12 +43,15 @@ class GameController extends GetxController {
   final RxInt hintsUsed = 0.obs;
   static const int maxHints = 3;
 
+  bool _hasVibrator = false;
+
   // ─── Stats ─────────────────────────────────────────────────────
   late StatsModel stats;
 
   @override
   void onInit() {
     super.onInit();
+    Vibration.hasVibrator().then((v) => _hasVibrator = v);
     _loadStats();
   }
 
@@ -135,8 +138,8 @@ class GameController extends GetxController {
 
     if (!WordService.to.isValidWord(input)) {
       _showMessage('not_in_word_list'.tr);
-      if (SettingController.to.hapticEnabled.value) {
-        HapticFeedback.heavyImpact();
+      if (SettingController.to.hapticEnabled.value && _hasVibrator) {
+        Vibration.vibrate(duration: 200);
       }
       _triggerShake();
       return;
@@ -161,21 +164,21 @@ class GameController extends GetxController {
     keyStates.refresh();
 
     if (guess == targetWord.value) {
-      if (SettingController.to.hapticEnabled.value) {
-        HapticFeedback.mediumImpact();
+      if (SettingController.to.hapticEnabled.value && _hasVibrator) {
+        Vibration.vibrate(duration: 100);
       }
       status.value = GameStatus.won;
       showConfetti.value = true;
       _updateStats(won: true, guessCount: guesses.length);
     } else if (guesses.length >= 6) {
-      if (SettingController.to.hapticEnabled.value) {
-        HapticFeedback.heavyImpact();
+      if (SettingController.to.hapticEnabled.value && _hasVibrator) {
+        Vibration.vibrate(duration: 200);
       }
       status.value = GameStatus.lost;
       _updateStats(won: false, guessCount: 0);
     } else {
-      if (SettingController.to.hapticEnabled.value) {
-        HapticFeedback.lightImpact();
+      if (SettingController.to.hapticEnabled.value && _hasVibrator) {
+        Vibration.vibrate(duration: 50);
       }
     }
 
