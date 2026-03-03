@@ -16,10 +16,24 @@ class PurchaseService extends GetxService {
 
   final RxBool available = false.obs;
   final RxBool isPremium = false.obs;
+  final RxBool isDevPremium = false.obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
   final RxString statusMessage = ''.obs;
   final RxList<ProductDetails> products = <ProductDetails>[].obs;
+
+  bool get hasActivePremium => isPremium.value || isDevPremium.value;
+
+  String get premiumPriceWithFallback {
+    final firstId = PurchaseConstants.ANDROID_PRODUCT_IDS.isNotEmpty
+        ? PurchaseConstants.ANDROID_PRODUCT_IDS.first
+        : null;
+    final price =
+        firstId != null
+            ? products.firstWhereOrNull((p) => p.id == firstId)?.price
+            : null;
+    return price ?? r'$2.99';
+  }
 
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   bool _initialized = false;
@@ -248,6 +262,14 @@ class PurchaseService extends GetxService {
       await HiveService.to.setSetting(HiveKeys.IS_PREMIUM, value);
     } catch (e) {
       errorMessage.value = e.toString();
+    }
+  }
+
+  void toggleDevPremium() {
+    if (kDebugMode) {
+      isDevPremium.value = !isDevPremium.value;
+      unawaited(_syncAdsForPremiumStatus(hasActivePremium));
+      Get.log('Dev premium: ${isDevPremium.value}');
     }
   }
 

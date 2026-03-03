@@ -72,4 +72,10 @@ class PremiumController extends GetxController {
   String planPrice(int index) {
     return purchaseService.getProductPrice(index, plans[index].fallbackPrice);
   }
+
+  String get premiumPriceWithFallback => purchaseService.premiumPriceWithFallback;
+
+  void toggleDevPremium() {
+    purchaseService.toggleDevPremium();
+  }
 }
