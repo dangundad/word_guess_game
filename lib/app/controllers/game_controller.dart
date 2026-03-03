@@ -299,15 +299,22 @@ class GameController extends GetxController {
   }
 
   void _updateStats({required bool won, required int guessCount}) {
-    stats.totalGames++;
     final today = WordService.to.getDateKey();
     final yesterday = WordService.to.getYesterdayKey();
 
+    // Guard against double-counting if the game result is applied more than once
+    // (e.g. rapid UI events). For daily mode, only count if not already recorded today.
+    if (gameMode.value == GameMode.daily && stats.lastPlayedDate == today) {
+      // Stats for today already saved — only update the guess distribution if
+      // this is the winning call and the slot was not yet filled.
+      return;
+    }
+
+    stats.totalGames++;
+
     if (won) {
       stats.totalWins++;
-      if (stats.lastPlayedDate == today) {
-        // Already played today — keep streak as-is (no double increment)
-      } else if (stats.lastPlayedDate == yesterday) {
+      if (stats.lastPlayedDate == yesterday) {
         stats.currentStreak++;
       } else {
         stats.currentStreak = 1;
@@ -319,9 +326,7 @@ class GameController extends GetxController {
         stats.guessDist[guessCount - 1]++;
       }
     } else {
-      if (stats.lastPlayedDate != today) {
-        stats.currentStreak = 0;
-      }
+      stats.currentStreak = 0;
     }
 
     stats.lastPlayedDate = today;
