@@ -17,8 +17,8 @@ class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -370,8 +370,8 @@ class _CategorySelector extends StatelessWidget {
   const _CategorySelector();
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,8 +444,8 @@ class _StatsCard extends StatelessWidget {
   const _StatsCard();
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
     final stats = HiveService.to.getStats() ?? StatsModel();
     final winRate = stats.totalGames > 0
         ? (stats.totalWins / stats.totalGames * 100).round()
@@ -514,8 +514,8 @@ class _StatCell extends StatelessWidget {
   const _StatCell({required this.label, required this.value});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -542,8 +542,8 @@ class _GuessDistribution extends StatelessWidget {
   const _GuessDistribution({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
     final maxVal = stats.guessDist.fold(1, (a, b) => a > b ? a : b);
 
     return Column(

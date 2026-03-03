@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import 'package:word_guess_game/app/data/enums/letter_state.dart';
 
@@ -106,8 +107,8 @@ class _LetterTileState extends State<LetterTile>
   }
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
 
     return AnimatedBuilder(
       animation: _anim,

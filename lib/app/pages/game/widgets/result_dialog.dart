@@ -16,8 +16,8 @@ class ResultDialog extends GetView<GameController> {
   const ResultDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
 
     return Obx(() {
       final won = controller.status.value == GameStatus.won;
@@ -145,8 +145,8 @@ class _StatsRow extends StatelessWidget {
   const _StatsRow({required this.controller});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
     final stats = controller.stats;
 
     final winRate = stats.totalGames > 0
@@ -227,8 +227,8 @@ class _CountdownTimerState extends State<_CountdownTimer> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext _) {
+    final cs = Get.theme.colorScheme;
     final h = _remaining.inHours.toString().padLeft(2, '0');
     final m = (_remaining.inMinutes % 60).toString().padLeft(2, '0');
     final s = (_remaining.inSeconds % 60).toString().padLeft(2, '0');

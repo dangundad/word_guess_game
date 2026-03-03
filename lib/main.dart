@@ -21,7 +21,7 @@ import 'package:word_guess_game/app/bindings/app_binding.dart';
 import 'package:word_guess_game/app/routes/app_pages.dart';
 import 'package:word_guess_game/app/services/hive_service.dart';
 import 'package:word_guess_game/app/services/word_service.dart';
-import 'package:word_guess_game/app/theme/app_theme.dart';
+import 'package:word_guess_game/app/theme/app_flex_theme.dart';
 import 'package:word_guess_game/app/translate/translate.dart';
 
 Future<void> main() async {
@@ -100,8 +100,8 @@ class WordGuessGameApp extends StatelessWidget {
           defaultTransition: Transition.fadeIn,
           initialBinding: AppBinding(),
           themeMode: ThemeMode.system,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
+          theme: AppFlexTheme.light,
+          darkTheme: AppFlexTheme.dark,
           scrollBehavior: ScrollBehavior().copyWith(overscroll: false),
           navigatorKey: Get.key,
           getPages: AppPages.routes,

@@ -54,7 +54,7 @@ class KeyboardWidget extends StatelessWidget {
     String key,
     GameController c,
   ) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = Get.theme.colorScheme;
     final isWide = key == 'ENTER' || key == '⌫';
     final state = c.keyStates[key];
 
