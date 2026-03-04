@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:word_guess_game/app/controllers/game_controller.dart';
 import 'package:word_guess_game/app/data/enums/game_status.dart';
@@ -50,12 +51,15 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(
         title: Text('app_name'.tr, style: TextStyle(fontSize: 18.sp)),
         centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: cs.surface,
         actions: [
           // Hint button
           Obx(() => IconButton(
             icon: Stack(
               children: [
-                const Icon(Icons.lightbulb_outline),
+                Icon(LucideIcons.lightbulb, size: 22.r),
                 if (controller.hintsUsed.value < GameController.maxHints)
                   Positioned(
                     right: 0,
@@ -75,11 +79,22 @@ class _GamePageState extends State<GamePage> {
             onPressed: controller.status.value != GameStatus.playing ? null : controller.useHint,
           )),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(LucideIcons.rotateCcw, size: 20.r),
             tooltip: 'new_game'.tr,
             onPressed: () => _confirmNewGame(context),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: Container(
+            height: 3,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [cs.primary, cs.tertiary],
+              ),
+            ),
+          ),
+        ),
       ),
       body: SafeArea(
         child: Stack(
@@ -212,15 +227,98 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _confirmNewGame(BuildContext context) {
-    Get.defaultDialog(
-      title: 'new_game'.tr,
-      middleText: 'new_game_confirm'.tr,
-      textConfirm: 'ok'.tr,
-      textCancel: 'cancel'.tr,
-      onConfirm: () {
-        Get.back();
-        controller.startNewGame();
-      },
+    final cs = Get.theme.colorScheme;
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.r)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [cs.primaryContainer, cs.primary.withValues(alpha: 0.3)],
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 52.r,
+                  height: 52.r,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cs.primary.withValues(alpha: 0.15),
+                  ),
+                  child: Icon(LucideIcons.rotateCcw, size: 26.r, color: cs.primary),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 8.h),
+              child: Column(
+                children: [
+                  Text(
+                    'new_game'.tr,
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'new_game_confirm'.tr,
+                    style: TextStyle(fontSize: 14.sp, color: cs.onSurfaceVariant),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: Get.back,
+                      child: Text('cancel'.tr),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [cs.primary, cs.tertiary]),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12.r),
+                          onTap: () {
+                            Get.back();
+                            controller.startNewGame();
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            child: Center(
+                              child: Text(
+                                'ok'.tr,
+                                style: TextStyle(
+                                  color: cs.onPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
