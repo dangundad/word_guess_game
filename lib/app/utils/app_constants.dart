@@ -1,6 +1,6 @@
 ﻿// ignore_for_file: constant_identifier_names
 
-/// Hive ???곸닔
+/// Hive 키 상수
 abstract class HiveKeys {
   static const String IS_FIRST_LAUNCH = 'is_first_launch';
   static const String IS_PREMIUM = 'is_premium';
@@ -15,12 +15,11 @@ abstract class AppUrls {
   static const String PACKAGE_NAME = 'com.dangundad.wordguessgame';
 }
 
-/// 媛쒕컻???뺣낫
+/// 개발자 정보
 abstract class DeveloperInfo {
   static const String DEVELOPER_EMAIL = 'dangundad@gmail.com';
 }
 
-/// Hive Box ?대쫫 (HiveService? ?숆린??
 abstract class HiveBoxNames {
   static const String SETTINGS = 'settings';
   static const String APP_DATA = 'app_data';
@@ -28,7 +27,6 @@ abstract class HiveBoxNames {
   static const String STATS = 'stats_box';
 }
 
-/// 寃뚯엫 ?곸닔
 abstract class GameConstants {
   static const int MAX_GUESSES = 6;
   static const int WORD_LENGTH = 5;
