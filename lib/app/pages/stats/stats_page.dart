@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,8 +10,8 @@ class StatsPage extends GetView<StatsController> {
   const StatsPage({super.key});
 
   @override
-  Widget build(BuildContext _) {
-    final cs = Get.theme.colorScheme;
+  Widget build(BuildContext context) {
+    final colorScheme = Get.theme.colorScheme;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -21,9 +22,9 @@ class StatsPage extends GetView<StatsController> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                cs.surface,
-                cs.surfaceContainerLowest.withValues(alpha: 0.94),
-                cs.surfaceContainerLow.withValues(alpha: 0.9),
+                colorScheme.surface,
+                colorScheme.surfaceContainerLowest.withValues(alpha: 0.94),
+                colorScheme.surfaceContainerLow.withValues(alpha: 0.9),
               ],
             ),
           ),
@@ -35,22 +36,22 @@ class StatsPage extends GetView<StatsController> {
                   children: [
                     Expanded(
                       child: Text(
-                        'stats'.tr,
+                        'stats_title'.tr,
                         style: TextStyle(
                           fontSize: 30.sp,
                           fontWeight: FontWeight.w800,
-                          color: cs.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ),
                     IconButton(
                       onPressed: () => controller.refresh(),
+                      tooltip: 'refresh'.tr,
                       icon: Icon(
                         LucideIcons.refreshCw,
-                        color: cs.primary,
+                        color: colorScheme.primary,
                         size: 20.r,
                       ),
-                      tooltip: 'refresh'.tr,
                     ),
                   ],
                 ),
@@ -58,51 +59,36 @@ class StatsPage extends GetView<StatsController> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => controller.refresh(),
-                  color: cs.primary,
+                  color: colorScheme.primary,
                   child: Obx(
                     () => ListView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
                       padding: EdgeInsets.fromLTRB(18.w, 4.h, 18.w, 24.h),
                       children: [
-                        _MetricCard(
-                          cs: cs,
-                          entries: [
-                            _MetricData('total_events'.tr, '${controller.totalEvents.value}'),
-                            _MetricData('today_events'.tr, '${controller.todayEvents.value}'),
-                            _MetricData('week_events'.tr, '${controller.weekEvents.value}'),
-                            _MetricData('open_stats'.tr, '${controller.openStatsCount.value}'),
-                            _MetricData('unique_routes'.tr, '${controller.uniqueRoutes.value}'),
-                            _MetricData('unique_screens'.tr, '${controller.uniqueScreens.value}'),
-                          ],
+                        _OverviewCard(
+                          colorScheme: colorScheme,
+                          totalGames: controller.totalGames.value,
+                          winRate: controller.winRate.value,
+                          currentStreak: controller.currentStreak.value,
+                          maxStreak: controller.maxStreak.value,
                         ),
                         SizedBox(height: 16.h),
-                        _SectionCard(
-                          cs: cs,
-                          title: 'top_events'.tr,
-                          child: controller.topEventNames.isEmpty
-                              ? Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                                  child: Center(
-                                    child: Text(
-                                      'no_data'.tr,
-                                      style: TextStyle(
-                                        color: cs.onSurfaceVariant,
-                                        fontSize: 13.sp,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Column(
-                                  children: controller.topEventNames.map((name) {
-                                    final count = controller.eventCountMap[name] ?? 0;
-                                    return _TopEventRow(
-                                      event: name,
-                                      count: count,
-                                      cs: cs,
-                                    );
-                                  }).toList(),
-                                ),
-                        ),
-                        SizedBox(height: 24.h),
+                        if (!controller.hasGames.value)
+                          _EmptyStateCard(colorScheme: colorScheme)
+                        else
+                          _DistributionSection(
+                            colorScheme: colorScheme,
+                            wins: controller.totalWins.value,
+                            losses: controller.totalLosses.value,
+                            averageWinningGuess:
+                                controller.averageWinningGuess.value,
+                            mostCommonGuess: controller.mostCommonGuess.value,
+                            distribution: controller.guessDistribution.toList(),
+                            chartMaxY: controller.chartMaxY,
+                            chartInterval: controller.chartInterval,
+                          ),
                       ],
                     ),
                   ),
@@ -116,172 +102,410 @@ class StatsPage extends GetView<StatsController> {
   }
 }
 
-class _MetricData {
-  final String label;
-  final String value;
-
-  const _MetricData(this.label, this.value);
-}
-
-class _MetricCard extends StatelessWidget {
-  final ColorScheme cs;
-  final List<_MetricData> entries;
-
-  const _MetricCard({
-    required this.cs,
-    required this.entries,
+class _OverviewCard extends StatelessWidget {
+  const _OverviewCard({
+    required this.colorScheme,
+    required this.totalGames,
+    required this.winRate,
+    required this.currentStreak,
+    required this.maxStreak,
   });
+
+  final ColorScheme colorScheme;
+  final int totalGames;
+  final int winRate;
+  final int currentStreak;
+  final int maxStreak;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: cs.outline.withValues(alpha: 0.35)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primaryContainer,
+            colorScheme.secondaryContainer.withValues(alpha: 0.78),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.06),
-            blurRadius: 14,
+            color: colorScheme.primary.withValues(alpha: 0.12),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Wrap(
-        spacing: 10.w,
-        runSpacing: 10.h,
-        children: entries
-            .map(
-              (entry) => SizedBox(
-                width: (Get.width - 66.w) / 3,
-                child: Container(
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: cs.outline.withValues(alpha: 0.28),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        entry.value,
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w800,
-                          color: cs.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        entry.label,
-                        style: TextStyle(
-                          color: cs.onSurfaceVariant,
-                          fontSize: 10.sp,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  final ColorScheme cs;
-  final String title;
-  final Widget child;
-
-  const _SectionCard({
-    required this.cs,
-    required this.title,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: 6.h),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: cs.outline.withValues(alpha: 0.35)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 8.h),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w800,
-                color: cs.onSurface,
+          Row(
+            children: [
+              Icon(LucideIcons.chartBar, size: 18.r, color: colorScheme.primary),
+              SizedBox(width: 8.w),
+              Text(
+                'stats_title'.tr,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
               ),
-            ),
+            ],
           ),
-          const Divider(height: 1),
-          Padding(padding: EdgeInsets.symmetric(vertical: 4.h), child: child),
+          SizedBox(height: 16.h),
+          Wrap(
+            spacing: 10.w,
+            runSpacing: 10.h,
+            children: [
+              _MetricTile(
+                colorScheme: colorScheme,
+                label: 'stat_played'.tr,
+                value: '$totalGames',
+              ),
+              _MetricTile(
+                colorScheme: colorScheme,
+                label: 'stat_winrate'.tr,
+                value: '$winRate%',
+              ),
+              _MetricTile(
+                colorScheme: colorScheme,
+                label: 'stat_streak'.tr,
+                value: '$currentStreak',
+              ),
+              _MetricTile(
+                colorScheme: colorScheme,
+                label: 'stat_max_streak'.tr,
+                value: '$maxStreak',
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 }
 
-class _TopEventRow extends StatelessWidget {
-  final String event;
-  final int count;
-  final ColorScheme cs;
-
-  const _TopEventRow({
-    required this.event,
-    required this.count,
-    required this.cs,
+class _DistributionSection extends StatelessWidget {
+  const _DistributionSection({
+    required this.colorScheme,
+    required this.wins,
+    required this.losses,
+    required this.averageWinningGuess,
+    required this.mostCommonGuess,
+    required this.distribution,
+    required this.chartMaxY,
+    required this.chartInterval,
   });
+
+  final ColorScheme colorScheme;
+  final int wins;
+  final int losses;
+  final double averageWinningGuess;
+  final int mostCommonGuess;
+  final List<int> distribution;
+  final double chartMaxY;
+  final double chartInterval;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-      child: Row(
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            LucideIcons.clock3,
-            size: 16.r,
-            color: cs.primary,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'guess_distribution'.tr,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w800,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              if (mostCommonGuess > 0)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(999.r),
+                  ),
+                  child: Text(
+                    '${'best_try'.tr} $mostCommonGuess',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              event,
-              style: TextStyle(color: cs.onSurface, fontSize: 12.sp),
-              overflow: TextOverflow.ellipsis,
-            ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _StatChip(
+                colorScheme: colorScheme,
+                icon: LucideIcons.badgeCheck,
+                label: 'stat_wins'.tr,
+                value: '$wins',
+              ),
+              _StatChip(
+                colorScheme: colorScheme,
+                icon: LucideIcons.circleX,
+                label: 'stat_losses'.tr,
+                value: '$losses',
+              ),
+              _StatChip(
+                colorScheme: colorScheme,
+                icon: LucideIcons.binary,
+                label: 'stat_average_guess'.tr,
+                value: _formatAverageGuess(averageWinningGuess),
+              ),
+            ],
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurfaceVariant,
+          SizedBox(height: 18.h),
+          SizedBox(
+            height: 240.h,
+            child: BarChart(
+              BarChartData(
+                maxY: chartMaxY,
+                alignment: BarChartAlignment.spaceAround,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: chartInterval,
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28.w,
+                      interval: chartInterval,
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 ||
+                            index >= distribution.length ||
+                            value != index.toDouble()) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: EdgeInsets.only(top: 8.h),
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barGroups: List<BarChartGroupData>.generate(distribution.length, (
+                  index,
+                ) {
+                  final count = distribution[index];
+                  final isPeak = mostCommonGuess == index + 1 && count > 0;
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: count.toDouble(),
+                        width: 22.w,
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: isPeak
+                              ? [
+                                  colorScheme.primary,
+                                  colorScheme.tertiary,
+                                ]
+                              : [
+                                  colorScheme.secondary,
+                                  colorScheme.secondary.withValues(alpha: 0.55),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(8.r),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: chartMaxY,
+                          color: colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAverageGuess(double value) {
+    if (value <= 0) {
+      return '0.0';
+    }
+    return value.toStringAsFixed(1);
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({
+    required this.colorScheme,
+    required this.label,
+    required this.value,
+  });
+
+  final ColorScheme colorScheme;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: (Get.width - 62.w) / 2,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w900,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.colorScheme,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final ColorScheme colorScheme;
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(999.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.r, color: colorScheme.primary),
+          SizedBox(width: 6.w),
+          Text(
+            '$label $value',
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyStateCard extends StatelessWidget {
+  const _EmptyStateCard({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 28.h),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            LucideIcons.chartColumnIncreasing,
+            size: 34.r,
+            color: colorScheme.primary,
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'stats_empty_title'.tr,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'stats_empty_body'.tr,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

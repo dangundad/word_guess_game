@@ -148,13 +148,11 @@ class _GamePageState extends State<GamePage> {
             ),
 
             // ─── Confetti ────────────────────────────────────────
-            Obx(() => controller.showConfetti.value
-                ? IgnorePointer(
-                    child: ConfettiOverlay(
-                      onComplete: () => controller.showConfetti.value = false,
-                    ),
-                  )
-                : const SizedBox.shrink()),
+            IgnorePointer(
+              child: ConfettiOverlay(
+                controller: controller.confettiController,
+              ),
+            ),
           ],
         ),
       ),

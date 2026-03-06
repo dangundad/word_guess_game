@@ -1,20 +1,28 @@
-﻿import 'package:get/get.dart';
+import 'dart:math' as math;
 
-import 'package:word_guess_game/app/services/activity_log_service.dart';
+import 'package:get/get.dart';
+
+import 'package:word_guess_game/app/data/models/stats_model.dart';
+import 'package:word_guess_game/app/services/hive_service.dart';
 
 class StatsController extends GetxController {
-  static const String appId = 'word_guess_game';
+  StatsController({HiveService? hiveService})
+    : _hiveService = hiveService ?? HiveService.to;
 
-  final ActivityLogService _activityLogService = Get.find<ActivityLogService>();
+  static StatsController get to => Get.find();
 
-  final RxInt totalEvents = 0.obs;
-  final RxInt todayEvents = 0.obs;
-  final RxInt weekEvents = 0.obs;
-  final RxInt uniqueRoutes = 0.obs;
-  final RxInt uniqueScreens = 0.obs;
-  final RxInt openStatsCount = 0.obs;
-  final RxList<String> topEventNames = <String>[].obs;
-  final RxMap<String, int> eventCountMap = <String, int>{}.obs;
+  final HiveService _hiveService;
+
+  final RxBool hasGames = false.obs;
+  final RxInt totalGames = 0.obs;
+  final RxInt totalWins = 0.obs;
+  final RxInt totalLosses = 0.obs;
+  final RxInt winRate = 0.obs;
+  final RxInt currentStreak = 0.obs;
+  final RxInt maxStreak = 0.obs;
+  final RxDouble averageWinningGuess = 0.0.obs;
+  final RxInt mostCommonGuess = 0.obs;
+  final RxList<int> guessDistribution = List<int>.filled(6, 0).obs;
 
   @override
   void onInit() {
@@ -24,54 +32,75 @@ class StatsController extends GetxController {
 
   @override
   Future<void> refresh() async {
-    final list = await _activityLogService.getEvents(appId: appId, limit: 400);
-
-    totalEvents.value = list.length;
-
-    final today = DateTime.now();
-    final dayStart = DateTime(today.year, today.month, today.day);
-    final weekStart = dayStart.subtract(const Duration(days: 6));
-
-    int todayCount = 0;
-    int weekCount = 0;
-
-    final routes = <String>{};
-    final screens = <String>{};
-    final eventCount = <String, int>{};
-
-    for (final item in list) {
-      final eventName = item['event']?.toString() ?? 'unknown';
-      final route = item['route']?.toString() ?? '-';
-      final screen = item['screen']?.toString() ?? '-';
-      final ts = _parseDate(item['at']);
-
-      routes.add(route);
-      screens.add(screen);
-      eventCount[eventName] = (eventCount[eventName] ?? 0) + 1;
-
-      if (ts.year == today.year && ts.month == today.month && ts.day == today.day) {
-        todayCount++;
-      }
-      if (!ts.isBefore(weekStart)) {
-        weekCount++;
-      }
-    }
-
-    todayEvents.value = todayCount;
-    weekEvents.value = weekCount;
-    uniqueRoutes.value = routes.length;
-    uniqueScreens.value = screens.length;
-
-    final sorted = eventCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    eventCountMap.assignAll(eventCount);
-    topEventNames.assignAll(sorted.take(8).map((item) => item.key).toList());
-    openStatsCount.value = eventCount['open_stats'] ?? 0;
+    final stats = _hiveService.getStats() ?? StatsModel();
+    _applyStats(stats);
   }
 
-  DateTime _parseDate(dynamic value) {
-    if (value is String) {
-      return DateTime.tryParse(value) ?? DateTime.fromMillisecondsSinceEpoch(0);
+  double get chartMaxY {
+    final maxCount = guessDistribution.fold<int>(0, math.max);
+    return maxCount <= 0 ? 1 : (maxCount + 1).toDouble();
+  }
+
+  double get chartInterval {
+    final maxY = chartMaxY;
+    return maxY <= 4 ? 1 : (maxY / 4).ceilToDouble();
+  }
+
+  void _applyStats(StatsModel stats) {
+    final normalizedDistribution = _normalizeGuessDistribution(stats.guessDist);
+    final games = stats.totalGames;
+    final wins = stats.totalWins.clamp(0, games);
+    final losses = math.max(0, games - wins);
+
+    totalGames.value = games;
+    totalWins.value = wins;
+    totalLosses.value = losses;
+    winRate.value = games > 0 ? ((wins / games) * 100).round() : 0;
+    currentStreak.value = stats.currentStreak;
+    maxStreak.value = stats.maxStreak;
+    guessDistribution.assignAll(normalizedDistribution);
+    averageWinningGuess.value = _calculateAverageWinningGuess(
+      distribution: normalizedDistribution,
+    );
+    mostCommonGuess.value = _resolveMostCommonGuess(normalizedDistribution);
+    hasGames.value = games > 0;
+  }
+
+  List<int> _normalizeGuessDistribution(List<int> raw) {
+    final normalized = List<int>.filled(6, 0);
+    for (int index = 0; index < raw.length && index < normalized.length; index++) {
+      normalized[index] = math.max(0, raw[index]);
     }
-    return DateTime.fromMillisecondsSinceEpoch(0);
+    return normalized;
+  }
+
+  double _calculateAverageWinningGuess({
+    required List<int> distribution,
+  }) {
+    final solvedGames = distribution.fold<int>(0, (sum, value) => sum + value);
+    if (solvedGames <= 0) {
+      return 0;
+    }
+
+    int weightedTotal = 0;
+    for (int index = 0; index < distribution.length; index++) {
+      weightedTotal += (index + 1) * distribution[index];
+    }
+
+    return weightedTotal / solvedGames;
+  }
+
+  int _resolveMostCommonGuess(List<int> distribution) {
+    int maxCount = 0;
+    int guessIndex = 0;
+
+    for (int index = 0; index < distribution.length; index++) {
+      if (distribution[index] > maxCount) {
+        maxCount = distribution[index];
+        guessIndex = index + 1;
+      }
+    }
+
+    return guessIndex;
   }
 }

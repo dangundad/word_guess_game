@@ -91,6 +91,13 @@ class Languages extends Translations {
       'cat_food': 'Food',
       'cat_countries': 'Countries',
       'stats_title': 'Your Stats',
+      'guess_distribution': 'Guess Distribution',
+      'best_try': 'Top Guess',
+      'stat_wins': 'Wins',
+      'stat_losses': 'Losses',
+      'stat_average_guess': 'Avg Guess',
+      'stats_empty_title': 'No games yet',
+      'stats_empty_body': 'Finish a round to unlock your guess distribution.',
 
       // Game
       'hint': 'Hint',
@@ -195,6 +202,13 @@ class Languages extends Translations {
       'cat_food': '음식',
       'cat_countries': '국가',
       'stats_title': '내 통계',
+      'guess_distribution': '시도 분포',
+      'best_try': '최다 시도',
+      'stat_wins': '승리',
+      'stat_losses': '패배',
+      'stat_average_guess': '평균 시도',
+      'stats_empty_title': '아직 플레이 기록이 없어요',
+      'stats_empty_body': '한 판 이상 플레이하면 시도 분포가 표시됩니다.',
       // Game
       'hint': '힌트',
       'new_game': '새 게임',
@@ -218,6 +232,5 @@ class Languages extends Translations {
     },
   };
 }
-
 
 

@@ -1,3 +1,4 @@
+import 'package:confetti/confetti.dart';
 import 'package:get/get.dart';
 import 'package:vibration/vibration.dart';
 import 'package:share_plus/share_plus.dart' hide Share;
@@ -37,7 +38,7 @@ class GameController extends GetxController {
   final RxString message = ''.obs;
 
   // ─── Confetti ──────────────────────────────────────────────────
-  final RxBool showConfetti = false.obs;
+  late final confettiController = ConfettiController(duration: const Duration(seconds: 2));
 
   // ─── Hints ─────────────────────────────────────────────────────
   final RxInt hintsUsed = 0.obs;
@@ -53,6 +54,12 @@ class GameController extends GetxController {
     super.onInit();
     Vibration.hasVibrator().then((v) => _hasVibrator = v);
     _loadStats();
+  }
+
+  @override
+  void onClose() {
+    confettiController.dispose();
+    super.onClose();
   }
 
   void _loadStats() {
@@ -168,7 +175,7 @@ class GameController extends GetxController {
         Vibration.vibrate(duration: 100);
       }
       status.value = GameStatus.won;
-      showConfetti.value = true;
+      confettiController.play();
       _updateStats(won: true, guessCount: guesses.length);
     } else if (guesses.length >= 6) {
       if (SettingController.to.hapticEnabled.value && _hasVibrator) {
