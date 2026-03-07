@@ -74,7 +74,7 @@ class ResultDialog extends GetView<GameController> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: controller.shareResult,
-                      icon: const Icon(Icons.share, size: 18),
+                      icon: Icon(Icons.share, size: 18.r),
                       label: Text('share'.tr),
                     ),
                   ),
